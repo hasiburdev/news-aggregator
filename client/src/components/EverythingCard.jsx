@@ -6,7 +6,11 @@ function Card(props) {
       <div className="everything-card flex flex-wrap p-5 gap-1 mb-1">
         <b className="title">{props.title}</b>
         <div className="everything-card-img mx-auto">
-          <img className="everything-card-img" src={props.imgUrl} alt="img" />
+          <img
+            className="everything-card-img"
+            src={props.imgUrl ?? "/new-artice-placeholder.jpg"}
+            alt="img"
+          />
         </div>
         <div className="description">
           <p className="description-text leading-7">
@@ -30,8 +34,8 @@ function Card(props) {
               {props.author}
             </p>
             <p className="origin-item">
-              <span className="font-semibold">Published At:</span>
-              ({props.publishedAt})
+              <span className="font-semibold">Published At:</span>(
+              {new Date(props.publishedAt).toString()})
             </p>
           </div>
         </div>

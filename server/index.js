@@ -5,11 +5,13 @@ const cors = require("cors");
 const app = express();
 
 // CORS configuration
-app.use(cors({
-  origin: '*', // Be cautious with this in production
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(
+  cors({
+    origin: "*", // Be cautious with this in production
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -25,7 +27,10 @@ async function makeApiRequest(url) {
       data: response.data,
     };
   } catch (error) {
-    console.error("API request error:", error.response ? error.response.data : error);
+    console.error(
+      "API request error:",
+      error.response ? error.response.data : error
+    );
     return {
       status: 500,
       success: false,
@@ -38,11 +43,37 @@ async function makeApiRequest(url) {
 app.get("/all-news", async (req, res) => {
   let pageSize = parseInt(req.query.pageSize) || 80;
   let page = parseInt(req.query.page) || 1;
-  let q = req.query.q || 'world'; // Default search query if none provided
+  let q = req.query.q || "world"; // Default search query if none provided
 
-  let url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(q)}&page=${page}&pageSize=${pageSize}&apiKey=${process.env.API_KEY}`;
+  let url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(
+    q
+  )}&page=${page}&pageSize=${pageSize}&apiKey=${
+    process.env.API_KEY
+  }&sortBy=publishedAt`;
   const result = await makeApiRequest(url);
-  res.status(result.status).json(result);
+
+  if (!result.success) {
+    return res.status(result.status).json(result);
+  }
+
+  const filteredResult = result.data?.articles?.filter((article) => {
+    if (
+      article.content === "[Removed]" ||
+      article.author === "[Removed]" ||
+      article.title === "[Removed]"
+    ) {
+      return false;
+    }
+    return true;
+  });
+
+  res.status(result.status).json({
+    ...result,
+    data: {
+      ...result.data,
+      articles: filteredResult,
+    },
+  });
 });
 
 app.get("/top-headlines", async (req, res) => {
@@ -50,9 +81,31 @@ app.get("/top-headlines", async (req, res) => {
   let page = parseInt(req.query.page) || 1;
   let category = req.query.category || "general";
 
-  let url = `https://newsapi.org/v2/top-headlines?category=${category}&language=en&page=${page}&pageSize=${pageSize}&apiKey=${process.env.API_KEY}`;
+  let url = `https://newsapi.org/v2/top-headlines?category=${category}&language=en&page=${page}&pageSize=${pageSize}&apiKey=${process.env.API_KEY}&sortBy=publishedAt`;
   const result = await makeApiRequest(url);
-  res.status(result.status).json(result);
+
+  if (!result.success) {
+    return res.status(result.status).json(result);
+  }
+
+  const filteredResult = result.data?.articles?.filter((article) => {
+    if (
+      article.content === "[Removed]" ||
+      article.author === "[Removed]" ||
+      article.title === "[Removed]"
+    ) {
+      return false;
+    }
+    return true;
+  });
+
+  res.status(result.status).json({
+    ...result,
+    data: {
+      ...result.data,
+      articles: filteredResult,
+    },
+  });
 });
 
 app.get("/country/:iso", async (req, res) => {
@@ -60,9 +113,31 @@ app.get("/country/:iso", async (req, res) => {
   let page = parseInt(req.query.page) || 1;
   const country = req.params.iso;
 
-  let url = `https://newsapi.org/v2/top-headlines?country=${country}&apiKey=${process.env.API_KEY}&page=${page}&pageSize=${pageSize}`;
+  let url = `https://newsapi.org/v2/top-headlines?country=${country}&apiKey=${process.env.API_KEY}&page=${page}&pageSize=${pageSize}&sortBy=publishedAt`;
   const result = await makeApiRequest(url);
-  res.status(result.status).json(result);
+
+  if (!result.success) {
+    return res.status(result.status).json(result);
+  }
+
+  const filteredResult = result.data?.articles?.filter((article) => {
+    if (
+      article.content === "[Removed]" ||
+      article.author === "[Removed]" ||
+      article.title === "[Removed]"
+    ) {
+      return false;
+    }
+    return true;
+  });
+
+  res.status(result.status).json({
+    ...result,
+    data: {
+      ...result.data,
+      articles: filteredResult,
+    },
+  });
 });
 
 const PORT = process.env.PORT || 3000;
